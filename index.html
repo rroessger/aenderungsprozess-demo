@@ -1,0 +1,675 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="description" content="Interaktive Demo: ein Änderungswunsch im Anlagenbau in fünf Schritten, mit Lean-Sicht, Use-Case-Bewertung und Einführungsplan. KI-Schritte sind eine regelbasierte Simulation.">
+<title>Änderungsprozess Demo</title>
+<style>
+:root{
+  --g900:#04342C;--g800:#085041;--g600:#0F6E56;--g400:#1D9E75;--g200:#9FE1CB;--g100:#C9EEDF;--g50:#E1F5EE;
+  --t900:#1C1C1A;--t800:#2C2C2A;--t700:#444441;--t500:#5F5E5A;--t400:#888780;--t200:#D3D1C7;--t100:#F1EFE8;
+  --a50:#FAEEDA;--a200:#F0C98A;--a800:#633806;
+  --bg:#FBFAF7;--card:#FFFFFF;--radius:10px;
+  --font:system-ui,-apple-system,"Segoe UI",Calibri,Roboto,Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--t800);font:16px/1.55 var(--font)}
+a{color:var(--g800)}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible,label:focus-within{outline:3px solid var(--g400);outline-offset:2px}
+.wrap{max-width:980px;margin:0 auto;padding:0 16px}
+header.top{background:var(--g900);color:#fff;padding:22px 0 18px}
+header.top h1{margin:0 0 4px;font-size:clamp(1.35rem,3.2vw,1.9rem);line-height:1.25}
+header.top p{margin:0;color:var(--g100);font-size:.95rem}
+.simbadge{display:inline-block;background:var(--a50);color:var(--a800);border:1px solid var(--a200);border-radius:999px;padding:1px 10px;font-size:.78rem;font-weight:600;letter-spacing:.02em;vertical-align:middle}
+header.top .simbadge{margin-top:10px}
+nav.progress{position:sticky;top:0;z-index:5;background:#fff;border-bottom:1px solid var(--t200)}
+nav.progress ol{list-style:none;margin:0 auto;padding:8px 16px;display:flex;gap:4px;max-width:980px;overflow-x:auto;scrollbar-width:thin}
+nav.progress li{flex:1 0 auto}
+nav.progress button{width:100%;border:0;background:var(--t100);color:var(--t500);padding:6px 10px;border-radius:6px;font:600 .8rem/1.2 var(--font);cursor:pointer;white-space:nowrap}
+nav.progress button[aria-current="step"]{background:var(--g800);color:#fff}
+nav.progress button.done{background:var(--g100);color:var(--g900)}
+nav.progress button:disabled{cursor:default;opacity:.6}
+main{padding:22px 0 40px}
+h2{font-size:1.4rem;color:var(--g900);margin:0 0 6px;line-height:1.3}
+h3{font-size:1.05rem;color:var(--g900);margin:0 0 8px}
+.lead{color:var(--t700);margin:0 0 18px;max-width:70ch}
+.card{background:var(--card);border:1px solid var(--t200);border-radius:var(--radius);padding:16px 18px;margin:0 0 14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+@media (max-width:720px){.grid2,.grid3{grid-template-columns:1fr}}
+.case{display:flex;flex-direction:column;text-align:left;border:2px solid var(--t200);background:#fff;border-radius:var(--radius);padding:14px;cursor:pointer;font:inherit;color:inherit;height:100%}
+.case:hover{border-color:var(--g400)}
+.case[aria-pressed="true"]{border-color:var(--g800);background:var(--g50)}
+.case .tag{font-size:.75rem;font-weight:700;color:var(--g600);text-transform:uppercase;letter-spacing:.04em}
+.case strong{display:block;margin:4px 0 6px;color:var(--g900)}
+.case span.d{font-size:.9rem;color:var(--t700)}
+label.f{display:block;font-weight:600;font-size:.9rem;margin:10px 0 4px;color:var(--t800)}
+input[type=text],input[type=number],textarea,select{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--t400);border-radius:6px;background:#fff;color:var(--t900)}
+textarea{min-height:92px;resize:vertical}
+input[type=number]{max-width:110px}
+.hint{font-size:.85rem;color:var(--t500);margin:4px 0 0}
+.panel{border-radius:var(--radius);padding:14px 16px;margin:0 0 14px}
+.panel h3{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.panel.ki{background:var(--a50);border:1px dashed var(--a200)}
+.panel.ki h3{color:var(--a800)}
+.panel.lean{background:var(--g50);border:1px solid var(--g100)}
+.panel.mensch{background:#fff;border:1px solid var(--t200);border-left:5px solid var(--g800)}
+.rule{font-family:ui-monospace,Consolas,monospace;font-size:.8rem;background:#fff;border:1px solid var(--a200);border-radius:4px;padding:1px 6px;color:var(--a800);word-break:break-word}
+ul.clean{list-style:none;margin:0;padding:0}
+ul.clean li{padding:4px 0}
+.checks{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px 14px}
+.chk{display:flex;gap:8px;align-items:flex-start;padding:6px 8px;border-radius:6px;border:1px solid transparent;cursor:pointer}
+.chk:hover{background:var(--t100)}
+.chk input{margin-top:4px;accent-color:var(--g800);width:18px;height:18px;flex:0 0 auto}
+.chk small{display:block;color:var(--a800);font-size:.78rem}
+.chk.sug{border-color:var(--a200);background:#FFFCF6}
+.times{display:flex;gap:18px;flex-wrap:wrap;align-items:flex-end}
+.times label{font-weight:600;font-size:.88rem}
+.times .u{font-size:.85rem;color:var(--t500);margin-left:4px}
+.waste{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--g200);background:#fff;border-radius:999px;padding:4px 10px;font-size:.85rem;cursor:pointer}
+.pill input{accent-color:var(--g800)}
+.pill.on{background:var(--g100);border-color:var(--g600)}
+.radios{display:flex;flex-wrap:wrap;gap:8px}
+.radios label{display:flex;gap:6px;align-items:center;border:1px solid var(--t200);border-radius:8px;padding:6px 12px;cursor:pointer;background:#fff}
+.radios input{accent-color:var(--g800)}
+.radios label.on{border-color:var(--g800);background:var(--g50)}
+.navbtns{display:flex;justify-content:space-between;gap:10px;margin-top:20px;flex-wrap:wrap}
+.btn{font:600 1rem var(--font);border-radius:8px;padding:10px 18px;cursor:pointer;border:2px solid var(--g800);background:var(--g800);color:#fff}
+.btn.sec{background:#fff;color:var(--g800)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.vorlage{background:#fff;border:1px solid var(--t200);border-radius:8px;padding:12px 14px;font-size:.92rem}
+.vorlage dt{font-weight:700;color:var(--g900);margin-top:6px}
+.vorlage dd{margin:0 0 2px}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px}
+@media (max-width:720px){.kpis{grid-template-columns:1fr 1fr}}
+.kpi{background:#fff;border:1px solid var(--t200);border-radius:var(--radius);padding:12px}
+.kpi .v{font-size:1.6rem;font-weight:700;color:var(--g900);line-height:1.2}
+.kpi .l{font-size:.82rem;color:var(--t500)}
+.vs-row{display:grid;grid-template-columns:150px 1fr 90px;gap:10px;align-items:center;margin:6px 0;font-size:.9rem}
+@media (max-width:560px){.vs-row{grid-template-columns:1fr 70px}.vs-row .bar{grid-column:1 / -1;order:3}}
+.bar{display:flex;height:22px;border-radius:4px;overflow:hidden;background:var(--t100)}
+.bar .b{background:var(--g800)}
+.bar .w{background:repeating-linear-gradient(135deg,var(--a200) 0 6px,#F6DDB3 6px 12px)}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.83rem;color:var(--t700);margin-top:8px}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+.legend .lb{background:var(--g800)}
+.legend .lw{background:repeating-linear-gradient(135deg,var(--a200) 0 4px,#F6DDB3 4px 8px)}
+.reco{border-radius:var(--radius);padding:14px 16px;background:var(--g900);color:#fff}
+.reco b{color:var(--g200)}
+.phases{counter-reset:ph;list-style:none;margin:0;padding:0}
+.phases li{position:relative;padding:10px 0 10px 46px;border-bottom:1px solid var(--t200)}
+.phases li:last-child{border-bottom:0}
+.phases li::before{counter-increment:ph;content:counter(ph);position:absolute;left:0;top:10px;width:32px;height:32px;border-radius:50%;background:var(--g800);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center}
+.phases strong{color:var(--g900)}
+details.about{background:#fff;border:1px solid var(--t200);border-radius:var(--radius);padding:12px 16px;margin:0 0 14px}
+details.about summary{cursor:pointer;font-weight:700;color:var(--g900)}
+details.about[open] summary{margin-bottom:8px}
+.range{display:grid;grid-template-columns:120px 1fr 120px;gap:10px;align-items:center;margin:8px 0}
+@media (max-width:560px){.range{grid-template-columns:1fr}}
+.range input{accent-color:var(--g800);width:100%}
+.range .val{font-weight:700;color:var(--g900)}
+.note{font-size:.85rem;color:var(--t500);font-style:italic}
+footer{border-top:1px solid var(--t200);padding:18px 0 28px;font-size:.85rem;color:var(--t500)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media print{nav.progress,.navbtns{display:none}body{background:#fff}}
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <h1>Ein Änderungswunsch, fünf Schritte</h1>
+    <p>Interaktive Demo von René Rößger zu Prozessanalyse, Lean-Sicht und KI im Anlagenbau</p>
+    <span class="simbadge">Simulation: erfundene Fälle, KI-Schritte regelbasiert</span>
+  </div>
+</header>
+<nav class="progress" aria-label="Fortschritt"><ol id="progress"></ol></nav>
+<main class="wrap" id="main" tabindex="-1"></main>
+<footer>
+  <div class="wrap">
+    René Rößger, Chemnitz. Erstellt im November 2026 für die Bewerbung bei pro beam systems. Alle Fälle und Zeiten sind erfunden und beschreiben keine internen Abläufe der pro-beam Gruppe.
+    Code: <a id="repoLink" href="#">GitHub</a>. Keine Cookies, kein Tracking, Ihre Eingaben bleiben in diesem Browserfenster.
+  </div>
+</footer>
+
+<script>
+"use strict";
+/* ============================================================
+   Inhalte und Regeln. Texte hier anpassen, die Logik liest nur diese Daten.
+   ============================================================ */
+const REPO_URL = "https://github.com/rroessger/aenderungsprozess-demo";
+
+const STEPS = [
+  { id: "erfassen", name: "Erfassen",
+    titel: "Schritt 1: Änderungswunsch erfassen",
+    lead: "Jede Änderung beginnt mit einer Anfrage, per Mail, Telefon oder im Servicefall. Je vollständiger sie ankommt, desto weniger Rückfragen später.",
+    lean: "Unvollständige Anfragen erzeugen Rückfragen. Die Bearbeitung ist kurz, aber die Anfrage wartet, bis die fehlende Angabe da ist.",
+    waste: ["warten", "fehler"],
+    ansatz: "Formular mit Vollständigkeitsprüfung und Kurzfassung", machbarkeit: 3, risiko: 1 },
+  { id: "betroffene", name: "Betroffene finden",
+    titel: "Schritt 2: Betroffene Bereiche finden",
+    lead: "Eine Änderung an einem Bauteil betrifft selten nur die Konstruktion. Wer zu spät davon erfährt, arbeitet mit altem Stand weiter.",
+    lean: "Wird ein Bereich vergessen, entsteht Nacharbeit: Teile werden nach altem Stand gefertigt oder bestellt.",
+    waste: ["fehler", "transport"],
+    ansatz: "Vorschlag betroffener Bereiche aus früheren, ähnlichen Änderungen", machbarkeit: 2, risiko: 2 },
+  { id: "bewerten", name: "Bewerten",
+    titel: "Schritt 3: Auswirkung bewerten",
+    lead: "Kosten, Termin und Sicherheit entscheiden, ob und wie die Änderung umgesetzt wird. Die Fachleute der betroffenen Bereiche liefern die Antworten.",
+    lean: "Die Bewertung läuft oft nacheinander durch mehrere Postfächer. Jede Station hat eigene Wartezeit, die eigentliche Prüfung ist meist kurz.",
+    waste: ["warten", "bewegung"],
+    ansatz: "Prüffragen und ähnliche frühere Fälle anzeigen", machbarkeit: 2, risiko: 2 },
+  { id: "freigeben", name: "Freigeben",
+    titel: "Schritt 4: Freigabe entscheiden",
+    lead: "Ein Mensch mit Verantwortung entscheidet. Die Demo bereitet nur die Entscheidungsvorlage vor.",
+    lean: "Wer nur in einer festen wöchentlichen Runde freigibt, erzeugt Wartezeit, auch wenn die Entscheidung selbst kurz ist.",
+    waste: ["warten", "bestaende"],
+    ansatz: "Workflow mit Erinnerung und Eskalation (dafür ist keine KI nötig)", machbarkeit: 3, risiko: 1 },
+  { id: "unterlagen", name: "Unterlagen anpassen",
+    titel: "Schritt 5: Unterlagen anpassen",
+    lead: "Erst wenn alle Unterlagen nachgezogen sind, ist die Änderung abgeschlossen. Sonst arbeitet jemand mit einem alten Stand.",
+    lean: "Daten werden oft in ERP und PDM doppelt gepflegt, Dokumente werden gesucht. Beides kostet Zeit und erzeugt Fehler.",
+    waste: ["ueberbearbeitung", "bewegung", "wissen"],
+    ansatz: "Dokumentensuche in PDM und ERP mit Zugriffsrechten", machbarkeit: 1, risiko: 2 }
+];
+
+/* Acht Verschwendungsarten nach gängiger Lean-Einteilung, auf Büroprozesse übertragen */
+const WASTE = {
+  transport:        { name: "Transport", text: "Informationen werden weitergereicht, kopiert, neu verschickt" },
+  bestaende:        { name: "Bestände", text: "Anfragen stapeln sich unbearbeitet" },
+  bewegung:         { name: "Bewegung", text: "Suchen, zwischen Systemen wechseln" },
+  warten:           { name: "Wartezeit", text: "Die Anfrage liegt, niemand arbeitet daran" },
+  ueberproduktion:  { name: "Überproduktion", text: "Mehr oder früher erarbeitet als nötig" },
+  ueberbearbeitung: { name: "Überbearbeitung", text: "Doppelte Pflege, unnötige Schleifen" },
+  fehler:           { name: "Fehler und Nacharbeit", text: "Rückfragen, Korrekturen, alter Stand" },
+  wissen:           { name: "Ungenutztes Wissen", text: "Erfahrung steckt in einzelnen Köpfen" }
+};
+
+const AREAS = {
+  konstruktion: { name: "Mechanische Konstruktion", frage: "Passt die Änderung zu Bauraum, Schnittstellen und Toleranzen?", docs: ["zeichnung", "stueckliste"] },
+  automation:   { name: "Elektrokonstruktion und Steuerung", frage: "Muss die Steuerung angepasst und neu getestet werden?", docs: ["schaltplan", "programm"] },
+  einkauf:      { name: "Einkauf", frage: "Gibt es Lieferzeiten oder Mindestmengen bei Zukaufteilen?", docs: ["bestellung"] },
+  fertigung:    { name: "Fertigung und Montage", frage: "Sind Teile nach altem Stand schon in Fertigung oder Montage?", docs: ["arbeitsplan"] },
+  service:      { name: "Service", frage: "Betrifft die Änderung bereits ausgelieferte Anlagen?", docs: ["ersatzteilliste", "kundeninfo"] },
+  doku:         { name: "Technische Dokumentation", frage: "Welche Kapitel der Betriebsanleitung und des Wartungsplans ändern sich?", docs: ["anleitung", "wartungsplan"] },
+  qualitaet:    { name: "Qualität und CE", frage: "Ändert sich eine Sicherheitsfunktion? Dann Risikobeurteilung prüfen.", docs: ["risiko", "pruefplan"] },
+  projekt:      { name: "Projektleitung und Vertrieb", frage: "Ist die Änderung beauftragt, kalkuliert und terminlich abgestimmt?", docs: ["angebot"] },
+  stammdaten:   { name: "ERP-Stammdaten (z. B. SAP)", frage: "Neue Materialnummer oder Änderung am bestehenden Material?", docs: ["material"] }
+};
+
+const DOCS = {
+  zeichnung: "Zeichnung (PDM)", stueckliste: "Stückliste (PDM und ERP)", schaltplan: "Schaltplan",
+  programm: "Steuerungsprogramm", bestellung: "Bestellung oder Anfrage beim Lieferanten", arbeitsplan: "Arbeitsplan Fertigung",
+  ersatzteilliste: "Ersatzteilliste", kundeninfo: "Information an Kunden mit gleicher Anlage", anleitung: "Betriebsanleitung",
+  wartungsplan: "Wartungsplan", risiko: "Risikobeurteilung", pruefplan: "Prüfplan", angebot: "Nachtragsangebot",
+  material: "Materialstamm im ERP"
+};
+
+const CATEGORIES = {
+  konstruktion: { name: "Konstruktionsänderung", areas: ["konstruktion", "fertigung", "stammdaten", "projekt", "doku"] },
+  service:      { name: "Serviceanfrage oder Ersatzteil", areas: ["service", "einkauf", "stammdaten"] },
+  doku:         { name: "Dokumentationsänderung", areas: ["doku", "service", "qualitaet"] }
+};
+
+/* Schlagwortregeln. Sie sind die gesamte "KI" dieser Demo und werden im Durchlauf offen angezeigt. */
+const CAT_RULES = [
+  { cat: "service", re: /störung|ausfall|ersatzteil|defekt|verschlei(?:ß|ss)|kunde meldet|reparatur|liefertermin/i, label: "störung | ausfall | ersatzteil | defekt | verschleiß | kunde meldet | reparatur | liefertermin" },
+  { cat: "doku", re: /anleitung|handbuch|wartungsplan|dokument|beschreibung|kapitel/i, label: "anleitung | handbuch | wartungsplan | dokument | kapitel" },
+  { cat: "konstruktion", re: /zeichnung|bauteil|aufnahme|halter|maß|konstrukt|variante|blech|vorrichtung/i, label: "zeichnung | bauteil | aufnahme | halter | maß | variante | vorrichtung" }
+];
+const AREA_RULES = [
+  { area: "automation", re: /steuerung|sps|software|sensor|elektr|programm/i, label: "steuerung | sps | software | sensor | elektr" },
+  { area: "qualitaet", re: /sicherheit|schutz|ce\b|not-?aus|gefahr|risiko/i, label: "sicherheit | schutz | ce | not-aus | gefahr" },
+  { area: "einkauf", re: /lieferant|zukauf|bestell|liefer/i, label: "lieferant | zukauf | bestell | liefer" },
+  { area: "projekt", re: /kosten|preis|angebot|nachtrag|kunde/i, label: "kosten | preis | angebot | nachtrag | kunde" },
+  { area: "konstruktion", re: /zeichnung|bauteil|aufnahme|halter|maß/i, label: "zeichnung | bauteil | aufnahme | halter | maß" },
+  { area: "service", re: /ausgeliefert|bestandsanlage|kunde meldet|vor ort/i, label: "ausgeliefert | bestandsanlage | kunde meldet | vor ort" }
+];
+const COMPLETENESS = [
+  { re: /\d{3,}|anlage\s+\w+|auftrag/i, ok: "Anlage oder Auftrag ist benannt", fehlt: "Rückfrage vorbereiten: Um welche Anlage oder welchen Auftrag geht es?" },
+  { re: /bis\s|termin|kw\s?\d|\d{1,2}\.\d{1,2}\.|woche|dringend/i, ok: "Ein Termin oder eine Dringlichkeit ist genannt", fehlt: "Rückfrage vorbereiten: Bis wann wird die Änderung gebraucht?" },
+  { re: /weil|damit|grund|wegen|für eine|neue/i, ok: "Ein Grund für die Änderung ist erkennbar", fehlt: "Rückfrage vorbereiten: Warum wird die Änderung gebraucht?" }
+];
+
+/* Drei erfundene Fälle. Zeiten in Stunden je Schritt: [Bearbeitung, Wartezeit]. Annahmen, keine Messung. */
+const CASES = {
+  aufnahme: {
+    tag: "Konstruktion", titel: "Geänderte Werkstückaufnahme",
+    text: "Ein Kunde bittet nach der Abnahme seiner Schweißanlage (Auftrag 24-1187) um eine geänderte Werkstückaufnahme für eine neue Bauteilvariante. Er braucht die Änderung bis KW 6, weil dann die Serie startet. Der Halter sitzt nahe am Sensor der Positionserkennung.",
+    ausloeser: "Kunde", times: [[0.5, 8], [1, 16], [4, 24], [0.5, 40], [6, 16]],
+    bewertung: { kosten: 2, termin: 3, sicherheit: "pruefen", nutzen: 3 }
+  },
+  ersatzteil: {
+    tag: "Service", titel: "Ersatzteil nach Verschleiß",
+    text: "Ein Kunde meldet Verschleiß an einer Dichtung an der Kammertür und fragt nach Ersatzteil und Liefertermin. Die Teilenummer auf dem Typenschild ist schlecht lesbar.",
+    ausloeser: "Service", times: [[0.3, 4], [0.5, 6], [1, 8], [0.3, 8], [1, 4]],
+    bewertung: { kosten: 1, termin: 3, sicherheit: "nein", nutzen: 3 }
+  },
+  wartung: {
+    tag: "Dokumentation", titel: "Wartungsplan nach Bauteiländerung",
+    text: "Nach einer Konstruktionsänderung an einer Baugruppe ändert sich ein Wartungsintervall. Betriebsanleitung, Wartungsplan und Ersatzteilliste müssen nachgezogen werden, damit der Service mit dem richtigen Stand arbeitet.",
+    ausloeser: "Intern", times: [[0.5, 8], [0.5, 8], [2, 16], [0.5, 24], [5, 24]],
+    bewertung: { kosten: 1, termin: 1, sicherheit: "pruefen", nutzen: 2 }
+  }
+};
+const FREE_TIMES = [[0.5, 8], [1, 8], [2, 16], [0.5, 24], [3, 8]];
+
+/* ============================================================
+   Zustand
+   ============================================================ */
+const S = {
+  screen: 0,           // 0 Start, 1 bis 5 Schritte, 6 Ergebnis
+  maxScreen: 0,
+  caseId: null, titel: "", text: "", ausloeser: "Kunde",
+  cat: null, catTouched: false,
+  areas: new Set(), areasTouched: false,
+  bewertung: { kosten: 2, termin: 2, sicherheit: "pruefen", nutzen: 2 },
+  entscheider: "Projektleitung", entscheidung: "",
+  docs: new Set(), docsTouched: false,
+  times: FREE_TIMES.map(t => t.slice()),
+  waste: STEPS.map(s => new Set(s.waste)),
+  ucStep: null, uc: null
+};
+
+/* ============================================================
+   Regel-Engine (Simulation)
+   ============================================================ */
+/* Jede Kategorie zählt ihre Schlagworttreffer, die meisten Treffer gewinnen. Bei Gleichstand gilt die Reihenfolge in CAT_RULES. */
+function suggestCategory(text) {
+  let best = { cat: null, n: 0 };
+  for (const r of CAT_RULES) {
+    const hits = text.match(new RegExp(r.re.source, "gi")) || [];
+    if (hits.length > best.n) best = { cat: r.cat, n: hits.length, hits: [...new Set(hits.map(h => h.toLowerCase()))], rule: r.label };
+  }
+  return best;
+}
+function suggestAreas(text, cat) {
+  const out = new Map();
+  if (cat) for (const a of CATEGORIES[cat].areas) out.set(a, "Kategorie " + CATEGORIES[cat].name);
+  for (const r of AREA_RULES) { const m = text.match(r.re); if (m && !out.has(r.area)) out.set(r.area, "Text enthält „" + m[0] + "“"); }
+  return out;
+}
+function suggestDocs(areas) {
+  const out = new Map();
+  for (const a of areas) for (const d of AREAS[a].docs) if (!out.has(d)) out.set(d, AREAS[a].name);
+  return out;
+}
+
+/* ============================================================
+   Hilfen
+   ============================================================ */
+const $ = (sel, root = document) => root.querySelector(sel);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]));
+const fmt = n => (Math.round(n * 10) / 10).toLocaleString("de-DE");
+const pct = n => Math.round(n * 100) + " %";
+const fullText = () => (S.titel + " " + S.text).trim();
+
+function totals() {
+  const b = S.times.reduce((a, t) => a + (+t[0] || 0), 0);
+  const w = S.times.reduce((a, t) => a + (+t[1] || 0), 0);
+  return { b, w, d: b + w, flow: (b + w) ? b / (b + w) : 0 };
+}
+function biggestWait() {
+  let i = 0; S.times.forEach((t, k) => { if ((+t[1] || 0) > (+S.times[i][1] || 0)) i = k; }); return i;
+}
+
+/* ============================================================
+   Darstellung
+   ============================================================ */
+const NAV = ["Start"].concat(STEPS.map((s, i) => (i + 1) + " " + s.name)).concat(["Ergebnis"]);
+
+function renderProgress() {
+  $("#progress").innerHTML = NAV.map((n, i) =>
+    `<li><button type="button" data-go="${i}" ${i > S.maxScreen ? "disabled" : ""} class="${i < S.screen ? "done" : ""}" ${i === S.screen ? 'aria-current="step"' : ""}>${esc(n)}</button></li>`
+  ).join("");
+}
+
+function go(i) {
+  S.screen = i; S.maxScreen = Math.max(S.maxScreen, i);
+  render();
+  const m = $("#main"); m.focus({ preventScroll: true }); window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function render() {
+  renderProgress();
+  const m = $("#main");
+  if (S.screen === 0) m.innerHTML = viewStart();
+  else if (S.screen <= 5) m.innerHTML = viewStep(S.screen - 1);
+  else m.innerHTML = viewResult();
+  document.title = (S.screen === 0 ? "Start" : NAV[S.screen]) + " | Änderungsprozess Demo";
+}
+
+function navButtons(back, next, nextLabel, nextDisabled) {
+  return `<div class="navbtns">
+    ${back !== null ? `<button type="button" class="btn sec" data-go="${back}">Zurück</button>` : "<span></span>"}
+    ${next !== null ? `<button type="button" class="btn" data-go="${next}" ${nextDisabled ? "disabled" : ""}>${esc(nextLabel)}</button>` : ""}
+  </div>`;
+}
+
+function kiHead(t) { return `<h3>${esc(t)} <span class="simbadge">Simulation</span></h3>`; }
+
+/* ---------- Start ---------- */
+function viewStart() {
+  const cards = Object.entries(CASES).map(([id, c]) =>
+    `<button type="button" class="case" data-case="${id}" aria-pressed="${S.caseId === id}">
+      <span class="tag">${esc(c.tag)}</span><strong>${esc(c.titel)}</strong><span class="d">${esc(c.text)}</span></button>`).join("");
+  const free = S.caseId === "frei";
+  return `
+  <h2>Worum es geht</h2>
+  <p class="lead">Ein Änderungswunsch im Anlagenbau durchläuft fünf Schritte: erfassen, Betroffene finden, bewerten, freigeben, Unterlagen anpassen.
+  Sie spielen einen Fall durch und sehen am Ende, wo die Zeit hängt, wo KI oder Automatisierung helfen könnte und wie ich das einführen würde. Dauer etwa 5 bis 10 Minuten.</p>
+  <div class="grid3" style="margin-bottom:14px">
+    <div class="panel mensch" style="margin:0"><h3>Sie entscheiden</h3>Jeder Vorschlag lässt sich ändern. Freigaben trifft immer ein Mensch.</div>
+    <div class="panel ki" style="margin:0">${kiHead("KI-Schritte")}Feste Schlagwortregeln, offen angezeigt. Kein Sprachmodell, keine Messung.</div>
+    <div class="panel lean" style="margin:0"><h3>Lean-Sicht</h3>Je Schritt Bearbeitungszeit und Wartezeit getrennt, dazu die Verschwendungsarten.</div>
+  </div>
+  <h3>Fall wählen</h3>
+  <div class="grid3">${cards}</div>
+  <div class="card" style="margin-top:14px">
+    <button type="button" class="case" data-case="frei" aria-pressed="${free}" style="height:auto">
+      <span class="tag">Eigenes Thema</span><strong>Eigenen Änderungswunsch eingeben</strong>
+      <span class="d">Die Regeln machen nur Vorschläge, wenn ein Schlagwort passt. Alles andere legen Sie selbst fest.</span></button>
+  </div>
+  <p class="note">Alle Fälle und Zeiten sind erfunden und beschreiben keine Abläufe der pro-beam Gruppe.</p>
+  ${navButtons(null, 1, "Durchlauf starten", !S.caseId)}`;
+}
+
+function chooseCase(id) {
+  S.caseId = id;
+  S.catTouched = S.areasTouched = S.docsTouched = false;
+  S.entscheidung = ""; S.ucStep = null; S.uc = null;
+  S.waste = STEPS.map(s => new Set(s.waste));
+  if (id === "frei") {
+    S.titel = ""; S.text = ""; S.ausloeser = "Intern";
+    S.times = FREE_TIMES.map(t => t.slice());
+    S.bewertung = { kosten: 2, termin: 2, sicherheit: "pruefen", nutzen: 2 };
+  } else {
+    const c = CASES[id];
+    S.titel = c.titel; S.text = c.text; S.ausloeser = c.ausloeser;
+    S.times = c.times.map(t => t.slice());
+    S.bewertung = Object.assign({}, c.bewertung);
+  }
+  S.maxScreen = 0;
+  syncSuggestions();
+}
+
+/* Vorschläge neu berechnen, solange der Nutzer nicht selbst geändert hat */
+function syncSuggestions() {
+  const txt = fullText();
+  if (!S.catTouched) S.cat = suggestCategory(txt).cat;
+  if (!S.areasTouched) S.areas = new Set(suggestAreas(txt, S.cat).keys());
+  if (!S.docsTouched) S.docs = new Set(suggestDocs(S.areas).keys());
+}
+
+/* ---------- Lean-Panel je Schritt ---------- */
+function leanPanel(i) {
+  const st = STEPS[i], t = S.times[i];
+  const pills = Object.entries(WASTE).map(([k, w]) =>
+    `<label class="pill ${S.waste[i].has(k) ? "on" : ""}" title="${esc(w.text)}"><input type="checkbox" data-waste="${i}:${k}" ${S.waste[i].has(k) ? "checked" : ""}>${esc(w.name)}</label>`).join("");
+  return `<div class="panel lean">
+    <h3>Lean-Sicht: Wo geht hier Zeit verloren?</h3>
+    <p style="margin:0 0 10px">${esc(st.lean)}</p>
+    <div class="times">
+      <div><label for="tb${i}">Bearbeitung</label><br><input id="tb${i}" type="number" min="0" max="999" step="0.5" value="${t[0]}" data-time="${i}:0" inputmode="decimal"><span class="u">Stunden</span></div>
+      <div><label for="tw${i}">Wartezeit bis zum nächsten Schritt</label><br><input id="tw${i}" type="number" min="0" max="999" step="0.5" value="${t[1]}" data-time="${i}:1" inputmode="decimal"><span class="u">Stunden</span></div>
+    </div>
+    <p class="hint">Vorbelegt mit Annahmen für diesen Fall. Ändern Sie die Werte nach Ihrer Erfahrung.</p>
+    <div style="margin-top:10px;font-weight:600;font-size:.9rem">Verschwendungsarten in diesem Schritt</div>
+    <div class="waste">${pills}</div>
+  </div>`;
+}
+
+/* ---------- Schritte ---------- */
+function viewStep(i) {
+  const st = STEPS[i];
+  let body = "";
+  if (i === 0) body = stepErfassen();
+  if (i === 1) body = stepBetroffene();
+  if (i === 2) body = stepBewerten();
+  if (i === 3) body = stepFreigeben();
+  if (i === 4) body = stepUnterlagen();
+  const blocked = i === 0 && !fullText();
+  return `<h2>${esc(st.titel)}</h2><p class="lead">${esc(st.lead)}</p>${body}${leanPanel(i)}
+    ${navButtons(i, i + 2, i === 4 ? "Zum Ergebnis" : "Weiter zu " + STEPS[i + 1].name, blocked)}`;
+}
+
+function stepErfassen() {
+  const txt = fullText();
+  const sug = suggestCategory(txt);
+  const checks = COMPLETENESS.map(c => c.re.test(txt)
+    ? `<li>Erfüllt: ${esc(c.ok)}</li>` : `<li><b>${esc(c.fehlt)}</b></li>`).join("");
+  const catOpts = `<option value="">Bitte wählen</option>` + Object.entries(CATEGORIES).map(([k, c]) =>
+    `<option value="${k}" ${S.cat === k ? "selected" : ""}>${esc(c.name)}</option>`).join("");
+  const kiText = !txt ? "Sobald Sie einen Text eingeben, prüfen die Regeln ihn." :
+    (sug.cat ? `Vorschlag Kategorie: <b>${esc(CATEGORIES[sug.cat].name)}</b>, ${sug.n} Treffer (${esc(sug.hits.join(", "))}). Die Kategorie mit den meisten Treffern gewinnt.<br>Regel: <span class="rule">${esc(sug.rule)}</span>`
+      : `Kein Schlagwort erkannt. Die Demo rät nicht, bitte wählen Sie die Kategorie selbst.`);
+  return `<div class="card">
+    <label class="f" for="titel">Kurztitel</label>
+    <input id="titel" type="text" maxlength="120" value="${esc(S.titel)}" data-field="titel" placeholder="z. B. Geänderter Halter für Sensor">
+    <label class="f" for="text">Beschreibung</label>
+    <textarea id="text" maxlength="1200" data-field="text" placeholder="Was soll sich ändern, an welcher Anlage, bis wann und warum?">${esc(S.text)}</textarea>
+    <div class="grid2">
+      <div><label class="f" for="ausl">Auslöser</label>
+        <select id="ausl" data-field="ausloeser">${["Kunde", "Service", "Intern", "Lieferant"].map(o => `<option ${S.ausloeser === o ? "selected" : ""}>${o}</option>`).join("")}</select></div>
+      <div><label class="f" for="cat">Kategorie (Ihre Entscheidung)</label><select id="cat" data-field="cat">${catOpts}</select></div>
+    </div>
+  </div>
+  <div class="panel ki" aria-live="polite">${kiHead("KI-Vorschlag: Kategorie und Vollständigkeit")}
+    <p style="margin:0 0 8px">${kiText}</p>
+    ${txt ? `<ul class="clean">${checks}</ul>` : ""}
+    <p class="hint">In einer echten Lösung würde ein Sprachmodell die Anfrage zusammenfassen. Hier prüfen feste Regeln nur auf Schlagworte, Zahlen und Termine.</p>
+  </div>`;
+}
+
+function stepBetroffene() {
+  const sug = suggestAreas(fullText(), S.cat);
+  const items = Object.entries(AREAS).map(([k, a]) => {
+    const why = sug.get(k);
+    return `<label class="chk ${why ? "sug" : ""}"><input type="checkbox" data-area="${k}" ${S.areas.has(k) ? "checked" : ""}>
+      <span>${esc(a.name)}${why ? `<small>Vorschlag: ${esc(why)}</small>` : ""}</span></label>`;
+  }).join("");
+  return `<div class="panel ki">${kiHead("KI-Vorschlag: betroffene Bereiche")}
+    <p style="margin:0">Markiert sind Bereiche, die zur Kategorie gehören oder deren Schlagwort im Text steht. Eine echte Lösung würde aus früheren, ähnlichen Änderungen lernen. Diese Daten hat die Demo nicht.</p></div>
+  <div class="card"><h3>Wer muss Bescheid wissen? (${S.areas.size} gewählt)</h3><div class="checks">${items}</div>
+  <p class="hint">Gelb umrandet: Vorschlag der Regeln. Haken setzen oder entfernen Sie selbst.</p></div>`;
+}
+
+function stepBewerten() {
+  const fragen = [...S.areas].map(a => `<li><b>${esc(AREAS[a].name)}:</b> ${esc(AREAS[a].frage)}</li>`).join("")
+    || "<li>Keine Bereiche gewählt. Gehen Sie einen Schritt zurück.</li>";
+  const r = (key, label, opts) => `<div><div class="f" id="l-${key}" style="font-weight:600;font-size:.9rem;margin:10px 0 4px">${label}</div>
+    <div class="radios" role="radiogroup" aria-labelledby="l-${key}">${opts.map(([v, t]) =>
+      `<label class="${String(S.bewertung[key]) === String(v) ? "on" : ""}"><input type="radio" name="${key}" value="${v}" data-bew="${key}" ${String(S.bewertung[key]) === String(v) ? "checked" : ""}>${t}</label>`).join("")}</div></div>`;
+  const lvl = [[1, "gering"], [2, "mittel"], [3, "hoch"]];
+  return `<div class="panel ki">${kiHead("KI-Vorschlag: Prüffragen je Bereich")}
+    <ul style="margin:0;padding-left:20px">${fragen}</ul>
+    <p class="hint">Feste Frage je gewähltem Bereich. Die Antworten kommen von den Fachleuten, nicht aus der Demo.</p></div>
+  <div class="card"><h3>Ihre Bewertung</h3>
+    <div class="grid2">
+      ${r("kosten", "Kosten der Änderung", lvl)}
+      ${r("termin", "Termindruck", lvl)}
+      ${r("sicherheit", "Sicherheitsfunktion betroffen?", [["nein", "nein"], ["pruefen", "prüfen"], ["ja", "ja"]])}
+      ${r("nutzen", "Nutzen für den Kunden", lvl)}
+    </div>
+    ${S.bewertung.sicherheit !== "nein" ? `<p class="hint" style="margin-top:10px"><b>Hinweis:</b> Bei möglicher Sicherheitsrelevanz gehört Qualität und CE zu den Betroffenen${S.areas.has("qualitaet") ? " (ist gewählt)." : `. <button type="button" class="btn sec" style="padding:2px 10px;font-size:.85rem" data-addarea="qualitaet">Bereich ergänzen</button>`}</p>` : ""}
+  </div>`;
+}
+
+function vorlage() {
+  const lv = { 1: "gering", 2: "mittel", 3: "hoch" };
+  const si = { nein: "nein", pruefen: "noch zu prüfen", ja: "ja" }[S.bewertung.sicherheit];
+  return `<dl class="vorlage" style="margin:0">
+    <dt>Änderung</dt><dd>${esc(S.titel || "ohne Titel")} (${esc(S.cat ? CATEGORIES[S.cat].name : "Kategorie offen")}, Auslöser ${esc(S.ausloeser)})</dd>
+    <dt>Betroffen</dt><dd>${esc([...S.areas].map(a => AREAS[a].name).join(", ") || "keine gewählt")}</dd>
+    <dt>Bewertung</dt><dd>Kosten ${lv[S.bewertung.kosten]}, Termindruck ${lv[S.bewertung.termin]}, Kundennutzen ${lv[S.bewertung.nutzen]}, Sicherheit: ${si}</dd>
+    <dt>Offene Punkte</dt><dd>${S.bewertung.sicherheit !== "nein" ? "Risikobeurteilung prüfen. " : ""}${S.bewertung.termin === 3 ? "Termin mit Projektleitung abstimmen. " : ""}${S.areas.has("service") ? "Klären, ob ausgelieferte Anlagen betroffen sind." : ""}${(S.bewertung.sicherheit === "nein" && S.bewertung.termin !== 3 && !S.areas.has("service")) ? "keine" : ""}</dd>
+  </dl>`;
+}
+
+function stepFreigeben() {
+  const opts = ["Freigeben", "Mit Auflagen freigeben", "Zurückstellen", "Ablehnen"];
+  return `<div class="panel ki">${kiHead("KI-Vorschlag: Entscheidungsvorlage")}
+    <p style="margin:0 0 8px">Aus Ihren Eingaben zusammengestellt, mit einer festen Vorlage. Die Demo gibt keine Empfehlung zur Freigabe.</p>${vorlage()}</div>
+  <div class="panel mensch"><h3>Ihre Entscheidung</h3>
+    <label class="f" for="entsch">Wer entscheidet?</label>
+    <select id="entsch" data-field="entscheider">${["Projektleitung", "Änderungsgremium", "Leitung Konstruktion", "Leitung Service"].map(o => `<option ${S.entscheider === o ? "selected" : ""}>${o}</option>`).join("")}</select>
+    <div class="f" id="l-ent" style="font-weight:600;font-size:.9rem;margin:12px 0 4px">Entscheidung</div>
+    <div class="radios" role="radiogroup" aria-labelledby="l-ent">${opts.map(o =>
+      `<label class="${S.entscheidung === o ? "on" : ""}"><input type="radio" name="ent" value="${o}" data-ent ${S.entscheidung === o ? "checked" : ""}>${o}</label>`).join("")}</div>
+    <p class="hint">Die Verantwortung bleibt beim Menschen. Das gilt auch in einer echten Lösung.</p>
+  </div>`;
+}
+
+function stepUnterlagen() {
+  const sug = suggestDocs(S.areas);
+  const stopped = S.entscheidung === "Ablehnen" || S.entscheidung === "Zurückstellen";
+  const items = Object.entries(DOCS).map(([k, d]) => {
+    const why = sug.get(k);
+    return `<label class="chk ${why ? "sug" : ""}"><input type="checkbox" data-doc="${k}" ${S.docs.has(k) ? "checked" : ""}>
+      <span>${esc(d)}${why ? `<small>Vorschlag: Bereich ${esc(why)}</small>` : ""}</span></label>`;
+  }).join("");
+  return `${stopped ? `<div class="panel mensch"><b>Entscheidung: ${esc(S.entscheidung)}.</b> Dann gehen nur eine Antwort an den Anfragenden und ein Eintrag in die Ablage raus. Sie können die Liste trotzdem ansehen.</div>` : ""}
+  <div class="panel ki">${kiHead("KI-Vorschlag: vermutlich betroffene Unterlagen")}
+    <p style="margin:0">Feste Zuordnung von Bereich zu Unterlage. Eine echte Lösung würde in PDM und ERP suchen, mit den Zugriffsrechten der Person, die fragt. Diese Anbindung hat die Demo nicht.</p></div>
+  <div class="card"><h3>Was muss nachgezogen werden? (${S.docs.size} gewählt)</h3><div class="checks">${items}</div></div>`;
+}
+
+/* ---------- Ergebnis ---------- */
+function ucDefaults(i) {
+  const tt = totals(), share = tt.w ? (+S.times[i][1] || 0) / tt.w : 0;
+  return { nutzen: share >= 0.4 ? 3 : share >= 0.2 ? 2 : 1, machbarkeit: STEPS[i].machbarkeit, risiko: STEPS[i].risiko, share };
+}
+function ucScore() { const u = S.uc; return u.nutzen + u.machbarkeit + (4 - u.risiko); }
+function ucReco() {
+  const s = ucScore();
+  if (s >= 8) return { t: "Pilot starten", d: "Klein, an einem Auftragstyp, nur lesend. Vorher den Ist-Zustand messen." };
+  if (s >= 6) return { t: "Erst Prozess und Daten klären", d: "Der Ansatz ist denkbar, aber Nutzen oder Machbarkeit sind noch unsicher. Zuerst den Ablauf vereinfachen und die Datenlage prüfen." };
+  return { t: "Zurückstellen", d: "Aufwand oder Risiko stehen in keinem guten Verhältnis zum Nutzen. Andere Schritte zuerst." };
+}
+
+function viewResult() {
+  const tt = totals(), bw = biggestWait();
+  if (S.ucStep === null) { S.ucStep = bw; S.uc = ucDefaults(bw); }
+  const max = Math.max(...S.times.map(t => (+t[0] || 0) + (+t[1] || 0)), 1);
+  const rows = STEPS.map((s, i) => {
+    const b = +S.times[i][0] || 0, w = +S.times[i][1] || 0;
+    return `<div class="vs-row"><span>${i + 1} ${esc(s.name)}</span>
+      <div class="bar" role="img" aria-label="${esc(s.name)}: ${fmt(b)} Stunden Bearbeitung, ${fmt(w)} Stunden Warten">
+        <div class="b" style="width:${b / max * 100}%"></div><div class="w" style="width:${w / max * 100}%"></div></div>
+      <span>${fmt(b + w)} h</span></div>`;
+  }).join("");
+  const wasteCount = {};
+  S.waste.forEach(set => set.forEach(k => { wasteCount[k] = (wasteCount[k] || 0) + 1; }));
+  const wasteList = Object.entries(wasteCount).sort((a, b) => b[1] - a[1])
+    .map(([k, n]) => `<li><b>${esc(WASTE[k].name)}</b> in ${n} von 5 Schritten. <span class="hint">${esc(WASTE[k].text)}</span></li>`).join("")
+    || "<li>Keine markiert.</li>";
+  const stepOpts = STEPS.map((s, i) => `<option value="${i}" ${S.ucStep === i ? "selected" : ""}>${i + 1} ${esc(s.name)}: ${esc(s.ansatz)}</option>`).join("");
+  const def = ucDefaults(S.ucStep);
+  const reco = ucReco();
+  const slider = (k, label, lo, hi, hint) => `<div class="range"><label for="uc-${k}"><b>${label}</b></label>
+    <input id="uc-${k}" type="range" min="1" max="3" step="1" value="${S.uc[k]}" data-uc="${k}" aria-valuetext="${["", lo, "mittel", hi][S.uc[k]]}">
+    <span class="val">${["", lo, "mittel", hi][S.uc[k]]}</span></div><p class="hint" style="margin:-4px 0 6px">${hint}</p>`;
+  const stepName = STEPS[S.ucStep].name;
+  return `<h2>Ergebnis: ${esc(S.titel || "Ihr Änderungswunsch")}</h2>
+  <p class="lead">Alle Zahlen stammen aus Ihren Eingaben in diesem Durchlauf. Sie zeigen die Methode, keine gemessene Wirkung.</p>
+
+  <div class="kpis">
+    <div class="kpi"><div class="v">${fmt(tt.d)} h</div><div class="l">Durchlaufzeit gesamt</div></div>
+    <div class="kpi"><div class="v">${fmt(tt.w)} h</div><div class="l">davon Wartezeit (${pct(tt.d ? tt.w / tt.d : 0)})</div></div>
+    <div class="kpi"><div class="v">${pct(tt.flow)}</div><div class="l">Flussgrad (Bearbeitung durch Durchlaufzeit)</div></div>
+    <div class="kpi"><div class="v" style="font-size:1.15rem">${esc(STEPS[bw].name)}</div><div class="l">längste Wartezeit (${fmt(+S.times[bw][1] || 0)} h)</div></div>
+  </div>
+
+  <div class="card"><h3>Wertstrom: Bearbeitung und Warten je Schritt</h3>${rows}
+    <div class="legend"><span><i class="lb"></i>Bearbeitung</span><span><i class="lw"></i>Wartezeit</span></div>
+    <p class="hint">Die Lean-Sicht: Meist liegt der größere Hebel in der Wartezeit, nicht in schnellerer Bearbeitung. Wer nur die Bearbeitung beschleunigt, ändert an der Durchlaufzeit wenig.</p></div>
+
+  <div class="grid2">
+    <div class="card"><h3>Markierte Verschwendungsarten</h3><ul class="clean">${wasteList}</ul></div>
+    <div class="card"><h3>Was die Demo nicht zeigt</h3><ul style="margin:0;padding-left:20px">
+      <li>Keine Messung: Die Zeiten sind Annahmen.</li><li>Keine KI-Wirkung: Die Vorschläge stammen aus festen Regeln.</li>
+      <li>Keine echten Systeme: kein ERP, kein PDM, keine Kundendaten.</li></ul></div>
+  </div>
+
+  <div class="card"><h3>Use-Case-Bewertung: Wo würde ich KI oder Automatisierung prüfen?</h3>
+    <label class="f" for="ucstep">Ansatz</label><select id="ucstep" data-ucstep>${stepOpts}</select>
+    <p class="hint">Vorausgewählt ist der Schritt mit der längsten Wartezeit. Die Regler sind mit Vorschlägen belegt, Sie können sie verschieben.</p>
+    ${slider("nutzen", "Nutzen", "gering", "hoch", `Vorschlag ${["", "gering", "mittel", "hoch"][def.nutzen]}: Der Schritt hat ${pct(def.share)} der gesamten Wartezeit (ab 40 % hoch, ab 20 % mittel).`)}
+    ${slider("machbarkeit", "Machbarkeit", "schwer", "leicht", `Vorschlag ${["", "schwer", "mittel", "leicht"][def.machbarkeit]}: hängt vor allem an Daten und Schnittstellen.`)}
+    ${slider("risiko", "Risiko", "gering", "hoch", "Datenschutz, vertrauliche Kundendaten, Einordnung nach EU-KI-Verordnung, Folgen eines falschen Vorschlags.")}
+    <div class="reco" style="margin-top:12px" aria-live="polite">Empfehlung: <b>${esc(reco.t)}</b>. ${esc(reco.d)}
+      <div style="font-size:.82rem;margin-top:6px;color:var(--g100)">Regel: Nutzen + Machbarkeit + (4 minus Risiko) = ${ucScore()} von 9. Ab 8 Pilot, ab 6 erst klären, darunter zurückstellen.</div></div>
+  </div>
+
+  <div class="card"><h3>So würde ich das einführen</h3>
+    <ol class="phases">
+      <li><strong>Problem klären.</strong> Heute dauert ein Änderungswunsch dieser Art laut Annahme ${fmt(tt.d)} h, davon ${fmt(tt.w)} h Warten, die meiste davon in „${esc(STEPS[bw].name)}“. Erst mit den Beteiligten an echten Fällen messen, ob das stimmt.</li>
+      <li><strong>Pilot mit Prüfkriterien.</strong> „${esc(STEPS[S.ucStep].ansatz)}“ für einen Auftragstyp, nur lesend, der Mensch entscheidet. Prüfkriterien vorher festlegen: Durchlaufzeit und Wartezeit vorher und nachher, Anteil korrigierter Vorschläge, Rückmeldung der Nutzer.</li>
+      <li><strong>Rollout in Stufen.</strong> Erst ein Team, dann ein Bereich, dann alle Auftragstypen. Nach jeder Stufe auswerten und erst dann erweitern.</li>
+      <li><strong>Befähigen.</strong> Key User aus den Fachbereichen einbinden, kurze Anleitung und Schulung am eigenen Fall, nach vier Wochen Befragung der Nutzer.</li>
+      <li><strong>Controlling.</strong> Monatlich Durchlaufzeit, Wartezeit in „${esc(stepName)}“, Anteil korrigierter Vorschläge und Nutzung. Datenschutz, IT-Sicherheit und Betriebsrat von Anfang an einbinden.</li>
+    </ol>
+  </div>
+
+  <details class="about"><summary>Über diese Demo</summary>
+    <p>Ich habe die Demo mit Claude Code gebaut (Agentic Coding): eine einzelne HTML-Datei ohne Server, ohne externe Bibliotheken, ohne Cookies. Ihre Eingaben bleiben in diesem Browserfenster und sind nach dem Schließen weg.</p>
+    <p>Die „KI-Schritte“ sind feste Schlagwortregeln, die Sie im Durchlauf sehen. Ich habe bewusst kein Sprachmodell eingebaut: Die Demo soll die Methode zeigen und nichts vortäuschen. Was eine echte Lösung bräuchte: Zugriff auf ERP und PDM mit Rechteprüfung, eine Datenschutzprüfung, Einordnung nach EU-KI-Verordnung und einen Pilot mit Messung.</p>
+    <p>Fälle und Zeiten sind erfunden. Die Verschwendungsarten folgen der gängigen Lean-Einteilung, auf Büroprozesse übertragen. Quellcode und Erklärung: <a href="${REPO_URL}">${esc(REPO_URL.replace("https://", ""))}</a></p>
+  </details>
+
+  <div class="navbtns"><button type="button" class="btn sec" data-go="5">Zurück</button>
+    <button type="button" class="btn sec" data-restart>Anderen Fall durchspielen</button></div>`;
+}
+
+/* ============================================================
+   Ereignisse
+   ============================================================ */
+document.addEventListener("click", e => {
+  const g = e.target.closest("[data-go]");
+  if (g && !g.disabled) { go(+g.dataset.go); return; }
+  const c = e.target.closest("[data-case]");
+  if (c) { chooseCase(c.dataset.case); render(); return; }
+  const add = e.target.closest("[data-addarea]");
+  if (add) { S.areas.add(add.dataset.addarea); S.areasTouched = true; if (!S.docsTouched) S.docs = new Set(suggestDocs(S.areas).keys()); render(); return; }
+  if (e.target.closest("[data-restart]")) { S.caseId = null; S.maxScreen = 0; go(0); }
+});
+
+document.addEventListener("input", e => {
+  const el = e.target, d = el.dataset;
+  if (d.field === "titel" || d.field === "text") {
+    S[d.field] = el.value; syncSuggestions();
+    const ki = document.querySelector(".panel.ki");
+    if (ki) { // nur Vorschlagsbereich neu zeichnen, damit der Cursor im Feld bleibt
+      const tmp = document.createElement("div"); tmp.innerHTML = stepErfassen();
+      ki.replaceWith(tmp.querySelector(".panel.ki"));
+      $("#cat").value = S.cat || "";
+    }
+    const next = document.querySelector('.navbtns [data-go="2"]'); if (next) next.disabled = !fullText();
+    return;
+  }
+  if (d.time) { const [i, k] = d.time.split(":").map(Number); const v = parseFloat(el.value); S.times[i][k] = isFinite(v) && v >= 0 ? Math.min(v, 999) : 0; return; }
+  if (d.uc) { S.uc[d.uc] = +el.value; render(); $("#uc-" + d.uc).focus(); return; }
+});
+
+document.addEventListener("change", e => {
+  const el = e.target, d = el.dataset;
+  if (d.field === "ausloeser" || d.field === "entscheider") { S[d.field] = el.value; return; }
+  if (d.field === "cat") { S.cat = el.value || null; S.catTouched = true; if (!S.areasTouched) S.areas = new Set(suggestAreas(fullText(), S.cat).keys()); if (!S.docsTouched) S.docs = new Set(suggestDocs(S.areas).keys()); return; }
+  if (d.area) { el.checked ? S.areas.add(d.area) : S.areas.delete(d.area); S.areasTouched = true; if (!S.docsTouched) S.docs = new Set(suggestDocs(S.areas).keys()); render(); focusData("area", d.area); return; }
+  if (d.doc) { el.checked ? S.docs.add(d.doc) : S.docs.delete(d.doc); S.docsTouched = true; render(); focusData("doc", d.doc); return; }
+  if (d.waste) { const [i, k] = d.waste.split(":"); el.checked ? S.waste[+i].add(k) : S.waste[+i].delete(k); el.parentElement.classList.toggle("on", el.checked); return; }
+  if (d.bew) { S.bewertung[d.bew] = d.bew === "sicherheit" ? el.value : +el.value; render(); focusSel(`[data-bew="${d.bew}"]:checked`); return; }
+  if ("ent" in d) { S.entscheidung = el.value; render(); focusSel("[data-ent]:checked"); return; }
+  if ("ucstep" in d) { S.ucStep = +el.value; S.uc = ucDefaults(S.ucStep); render(); $("#ucstep").focus(); return; }
+});
+
+function focusData(k, v) { focusSel(`[data-${k}="${v}"]`); }
+function focusSel(sel) { const n = document.querySelector(sel); if (n) n.focus({ preventScroll: true }); }
+
+$("#repoLink").href = REPO_URL;
+render();
+</script>
+</body>
+</html>
